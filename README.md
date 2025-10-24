@@ -82,20 +82,52 @@ gnn-elasticity-predictor/
     │   └── metrics.json
 ```
 
-## Installation
+## Installation (Recommended With GPU Support)
 
+1. Install Conda (if not already)
+- Download and install Miniconda or Anaconda from https://docs.conda.io/en/latest/miniconda.html
+
+2. Create and activate an environment
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/gnn-elasticity-predictor.git
-cd gnn-elasticity-predictor
+# Create a fresh Python 3.10 environment (3.9–3.11 are fine)
+conda create -n gnn python=3.10
+conda activate gnn
+```
 
-# (Optional) Create and activate a virtual environment
-python -m venv venv
-source venv/bin/activate   # On Windows: venv\Scripts\activate
+3. Install PyTorch with CUDA support
+- Check your CUDA Toolkit version (nvidia-smi) and then install the matching build from PyTorch Get Started
+- For example, for CUDA 12.1:
+```bash
+# Example (adjust the cuda version if needed)
+pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
+```
+- If you’re on a CPU-only system:
+```bash
+pip install torch torchvision torchaudio
+```
 
-# Install dependencies
+4. Install PyTorch Geometric (PYG) and extensions
+- PyG must match your PyTorch version. Check https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html
+```bash
+pip install pyg-lib torch-scatter torch-sparse torch-cluster torch-spline-conv torch-geometric \
+  -f https://data.pyg.org/whl/torch-2.3.0+cu121.html
+```
+
+5. Install remaining dependencies
+```bash
+pip install numpy scipy matplotlib tqdm scikit-learn pymatgen matminer
+```
+- If you have a requirements.txt, install it afterwards to pull any repo-specific extras:
+```bash
 pip install -r requirements.txt
 ```
+
+6. Verify the installation
+```bash
+python -c "import torch; print('CUDA available:', torch.cuda.is_available())"
+python -c "import torch_geometric; print('PyG OK')"
+```
+
 Requirements include:
 - Python ≥ 3.9
 - PyTorch ≥ 2.0
