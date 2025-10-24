@@ -1,0 +1,7 @@
+# requirements.txt for Python Project
+# List your project's dependencies here, one per line.
+# Example:
+# numpy==1.26.0
+# requests>=2.31.0
+
+# If you don't know your dependencies yet, you can leave this file empty or add them as you go.
