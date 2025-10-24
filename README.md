@@ -40,14 +40,17 @@ Featurization:
 - Line Graph (Angle): Gaussian basis expansion of bond angles (θ, cosθ, sinθ)
 - Global: Metric tensor (a², b², c², abcosγ, accosβ, bccosα), volume/atom, density, space group one-hot (230D), coordination histogram
 - Derived Global:	CN statistics, bond length and angle distributions, graph density, bond directionality stats, axial ratios
+  
 Targets:
 - Bulk modulus (K_VRH)
 - Shear modulus (G_VRH)
+  
 Architecture:
 - ALIGNN-style dual graph (atoms + bonds)
 - Transformer-based message passing (angles → bonds → atoms)
 - Heteroscedastic Gaussian regression heads for per-sample uncertainty
 - 5-member ensemble for epistemic uncertainty
+  
 Training Setup:
 - Deep ensemble (variable hidden sizes, dropout, and LR per member)
 - K-fold cross validation & 4-way split (Train / Val / Cal / Test)
@@ -55,6 +58,7 @@ Training Setup:
 - Optional inverse-frequency sample weighting via KNN in embedding space
 - Conformal calibration for uncertainty quantification
 - Automatic mixed precision (AMP) with CUDA TF32
+  
 Evaluation Metrics:
 - RMSE, MAE, R²
 - Gaussian NLL, Expected Calibration Error (ECE)
