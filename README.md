@@ -32,7 +32,8 @@ ALIGNN-style GNN for predicting bulk and shear moduli from Materials Project DFT
       - Sharpness–coverage tradeoff
 
   - Saves metrics as JSON and figures under /artifacts/ensemble.
-    
+
+Note: This project uses [mat2vec](https://github.com/materialsintelligence/mat2vec) to generate vector representations of materials science text data.
 ## Key Features
 Featurization:
 - Node (Atom): Z, group, period, Pauling electronegativity, atomic mass, covalent/atomic radii, mat2vec embedding
