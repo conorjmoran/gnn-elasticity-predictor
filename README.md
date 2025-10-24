@@ -65,6 +65,21 @@ Evaluation Metrics:
 - Conformal coverage and interval width
 - Ensemble diversity and member correlation
 - Spearman correlation between error magnitude and predicted variance
+
+## Repository Structure
+gnn-elasticity-predictor/
+├── fetch.py               # Fetches & featurizes Materials Project data
+├── train_2.py             # Ensemble training with heteroscedastic heads
+├── evaluate_ensemble.py   # Post-training evaluation and plots
+├── requirements.txt
+├── README.md
+└── artifacts/
+    ├── ensemble/
+    │   ├── model_0.pt ... model_4.pt
+    │   ├── scaler_state.pt
+    │   ├── conformal.pt
+    │   └── metrics.json
+
 ## Installation
 
 ```bash
