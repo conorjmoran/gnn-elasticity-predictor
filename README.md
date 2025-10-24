@@ -1,37 +1,50 @@
 # gnn-elasticity-predictor
 ALIGNN-style GNN for predicting bulk and shear moduli from Materials Project DFT data. Uses a 5-member ensemble, heteroscedastic head, and conformal calibration to quantify epistemic and aleatoric uncertainty, accelerating materials discovery by reducing redundant DFT simulations.
 
+## Overview
+
+1. Data Fetching and Featurization (fetch.py):
+- Queries the Materials Project API for all materials with valid Voigt–Reuss–Hill bulk and shear moduli.
+- Builds atom, bond, and bond-angle (line graph) features following the ALIGNN framework.
+- Supports mat2vec embeddings to encode elemental information.
+- Outputs ~10,000 graph samples as .pt PyTorch Geometric datasets.
+
+2. Model Training (train_2.py):
+- Trains a heteroscedastic ALIGNN with separate Gaussian heads for bulk and shear modulus prediction.
+- Implements:
+  - 5-member deep ensemble
+  - Log-transformed targets
+  - Negative Log-Likelihood (NLL) loss with variance regularization
+  - Feature jitter and inverse-frequency weighting
+  - Mixed-precision training and early stopping
+  - Conformal calibration on validation data for uncertainty intervals
+  - Produces trained model checkpoints (model_i.pt) and calibration statistics.
+
+3. Evaluation and Visualization (evaluate_ensemble.py)
+  - Loads all ensemble members and computes ensemble-averaged predictions and uncertainties.
+  - Outputs:
+    - Metrics: RMSE, MAE, R², NLL, ECE, coverage, residual skewness, diversity
+    - Plots:
+      - Parity and residual plots
+      - Reliability curves (Gaussian + conformal)
+      - Ensemble correlation heatmap
+      - Error–variance relationships
+      - Sharpness–coverage tradeoff
+
+  - Saves metrics as JSON and figures under /artifacts/ensemble.
+    
 ## Features
 
-- Fetch structure data for all materials from the Materials Project with valid Voigt-Ruess-Hill Bulk and Shear Moduli (~10,000 samples)
-- This project uses [mat2vec](https://github.com/materialsintelligence/mat2vec) to generate vector representations of Node Elements.
-- Features:
-  - Nodes: Z, Group, Period, Pauling EN, Atomic Mass, Covalent/Atomic Radii, mat2vec embedding
-  - Edges: RBF Distances, ΔEN, Cartesian Unit Direction
-  - Line Graph Edge: RBF Bond Angles, Raw angle θ (rad), cos θ, sin θ
-  - Core Global: Lattice Features (a², b², c², ab cos γ, ac cos β, bc cos α), volume per atom, density, coordination histogram, space group (one-hot)
-  - Derived Global: CN stats, bond length stats, angle stats, graph density, bond directionality stats, axial ratios
-- Targets:
-  - Bulk modulus (K_VRH)
-  - Shear modulus (G_VRH)
-- Constructs ALIGNN style GNN architecture that considers 3 body interactions:
-  - Atom graph (Nodes: atoms, Edges: bonds)
-  - Line Graph (Nodes: bonds, Edges: bond angles)
-  - Transformer-based message passing (bond angles -> bonds -> atoms)
-  - Separate heteroscedastic heads for Bulk and shear moduli mean and variance prediction
-- Training:
-  - 5 member ensemble
-  - 4 way Train/Val/Cal/Test split
-  - KFold Cross Validation
-  - Negative Log Likelihood loss equation with variance regularization
-  - Dropout + weight decay (Adam optimization)
-  - Feature Jitter
-  - Optional inverse frequency weighting by density in embedding space
-  - Standardized features and targets
-  - Log transformation of targets
-  - Conformal calibration
-- Evaluation metrics:
+Data Fetching and Featurization (fetch.py)
 
+Queries the Materials Project API for all materials with valid Voigt–Reuss–Hill bulk and shear moduli.
+
+Builds atom, bond, and bond-angle (line graph) features following the ALIGNN framework.
+
+Supports mat2vec
+ embeddings to encode elemental information.
+
+Outputs ~10,000 graph samples as .pt PyTorch Geometric datasets.
 
 ## Installation
 
