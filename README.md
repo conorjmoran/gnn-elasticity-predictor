@@ -33,19 +33,34 @@ ALIGNN-style GNN for predicting bulk and shear moduli from Materials Project DFT
 
   - Saves metrics as JSON and figures under /artifacts/ensemble.
     
-## Features
-
-Data Fetching and Featurization (fetch.py)
-
-Queries the Materials Project API for all materials with valid Voigt–Reuss–Hill bulk and shear moduli.
-
-Builds atom, bond, and bond-angle (line graph) features following the ALIGNN framework.
-
-Supports mat2vec
- embeddings to encode elemental information.
-
-Outputs ~10,000 graph samples as .pt PyTorch Geometric datasets.
-
+## Key Features
+Featurization:
+- Node (Atom): Z, group, period, Pauling electronegativity, atomic mass, covalent/atomic radii, mat2vec embedding
+- Edge (Bond): Radial basis expansion of bond distance, ΔEN, unit bond direction (x,y,z)
+- Line Graph (Angle): Gaussian basis expansion of bond angles (θ, cosθ, sinθ)
+- Global: Metric tensor (a², b², c², abcosγ, accosβ, bccosα), volume/atom, density, space group one-hot (230D), coordination histogram
+- Derived Global:	CN statistics, bond length and angle distributions, graph density, bond directionality stats, axial ratios
+Targets:
+- Bulk modulus (K_VRH)
+- Shear modulus (G_VRH)
+Architecture:
+- ALIGNN-style dual graph (atoms + bonds)
+- Transformer-based message passing (angles → bonds → atoms)
+- Heteroscedastic Gaussian regression heads for per-sample uncertainty
+- 5-member ensemble for epistemic uncertainty
+Training Setup:
+- Deep ensemble (variable hidden sizes, dropout, and LR per member)
+- K-fold cross validation & 4-way split (Train / Val / Cal / Test)
+- Negative Log-Likelihood + log variance regularization
+- Optional inverse-frequency sample weighting via KNN in embedding space
+- Conformal calibration for uncertainty quantification
+- Automatic mixed precision (AMP) with CUDA TF32
+Evaluation Metrics:
+- RMSE, MAE, R²
+- Gaussian NLL, Expected Calibration Error (ECE)
+- Conformal coverage and interval width
+- Ensemble diversity and member correlation
+- Spearman correlation between error magnitude and predicted variance
 ## Installation
 
 ```bash
