@@ -67,6 +67,7 @@ Evaluation Metrics:
 - Spearman correlation between error magnitude and predicted variance
 
 ## Repository Structure
+```bash
 gnn-elasticity-predictor/
 ├── fetch.py               # Fetches & featurizes Materials Project data
 ├── train_2.py             # Ensemble training with heteroscedastic heads
@@ -79,21 +80,27 @@ gnn-elasticity-predictor/
     │   ├── scaler_state.pt
     │   ├── conformal.pt
     │   └── metrics.json
+```
 
 ## Installation
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/your-repo-name.git
+git clone https://github.com/yourusername/gnn-elasticity-predictor.git
+cd gnn-elasticity-predictor
 
-# (Optional) Create a virtual environment
+# (Optional) Create and activate a virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+source venv/bin/activate   # On Windows: venv\Scripts\activate
 
 # Install dependencies
 pip install -r requirements.txt
 ```
-
+Requirements include:
+- Python ≥ 3.9
+- PyTorch ≥ 2.0
+- PyTorch Geometric ≥ 2.3
+- pymatgen, matminer, scikit-learn, numpy, tqdm, matplotlib, scipy
 ## Usage
 
 Explain how to run or use your project.
