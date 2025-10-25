@@ -12,7 +12,7 @@ We pledge to make participation in our project a harassment-free experience for 
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project maintainers at [your-email@example.com].
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to the project maintainers at [moran.conor.career@gmail.com].
 
 Maintainers are obligated to act fairly and consistently.
 
