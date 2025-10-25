@@ -136,12 +136,51 @@ Requirements include:
 - pymatgen, matminer, scikit-learn, numpy, tqdm, matplotlib, scipy
 ## Usage
 
-Explain how to run or use your project.
+Step 1: Fetch and Featurize Data (Optional)
+```bash
+python fetch.py --api-key YOUR_MP_API_KEY --output-dir data/mp_gnn
+```
+This will generate .pt graph files with node/edge/global attributes.
+
+Step 2: Train the Ensemble (Optional)
+```bash
+python train_2.py --data-dir data/mp_gnn --epochs 60 --ensemble-size 5 \
+    --hidden 256 --layers 4 --heads 4 --val-frac 0.1 --calib-frac 0.05
+```
+Outputs trained models under artifacts/ensemble.
+
+Step 3: Evaluate and Visualize (Optional)
+```bash
+python evaluate_ensemble.py --ensemble-dir artifacts/ensemble \
+    --data-dir data/mp_gnn --eval-split test
+```
+Generates metrics and figures in artifacts/ensemble/plots/
+
+Step 4: Inference
+Note: steps 1-3 are only needed if you would like to tune your own model. You can use the pretained ensemble for inference.
+
+##Pretrained Model Metrics
+
+|R²|~0.89|
+|MAE|~9 GPa|
+|RMSE|~15 GPa|
+|Conformal Coverage| ~90%|
+|Ensemble Member Correlation| 0.98-0.99|
+|Diversity (Var Mean)|~60|
+
 
 ## Contributing
 
+Contributions are welcome!
+Please fork the repo, create a feature branch, and submit a pull request.
 See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## License
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
+
+##Citation
+If you use this work, please cite:
+Moran, C. (2025). gnn-elasticity-predictor: ALIGNN-style GNN for predicting bulk and shear moduli.
+https://github.com/conorjmoran/gnn-elasticity-predictor
+
