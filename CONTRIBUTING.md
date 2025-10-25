@@ -1,4 +1,4 @@
-# Contributing to Project Title
+# Contributing to gnn-elasticty-predictor
 
 Thank you for considering contributing! Here are some guidelines to help you get started.
 
