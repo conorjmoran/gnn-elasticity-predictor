@@ -164,8 +164,8 @@ Note: steps 1-3 are only needed if you would like to tune your own model. You ca
 |R²|~0.89|
 |MAE|~9 GPa|
 |RMSE|~15 GPa|
-|Conformal Coverage| ~90%|
-|Ensemble Member Correlation| 0.98-0.99|
+|Conformal Coverage|~90%|
+|Ensemble Member Correlation|0.98-0.99|
 |Diversity (Var Mean)|~60|
 
 
