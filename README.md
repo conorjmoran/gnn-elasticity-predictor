@@ -179,7 +179,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-##Citation
+## Citation
 If you use this work, please cite:
 Moran, C. (2025). gnn-elasticity-predictor: ALIGNN-style GNN for predicting bulk and shear moduli.
 https://github.com/conorjmoran/gnn-elasticity-predictor
