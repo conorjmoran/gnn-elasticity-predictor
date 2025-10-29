@@ -459,7 +459,7 @@ def build_models(
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Evaluate deep ensemble metrics and plots")
     p.add_argument("--ensemble-dir", default=Path("artifacts") / "ensemble")
-    p.add_argument("--data-dir", default=Path("C:/fast/data/mp_gnn"))
+    p.add_argument("--data-dir", default=Path("data") / "mp_gnn")
     p.add_argument("--batch-size", type=int, default=64)
     p.add_argument("--num-workers", type=int, default=0)
     p.add_argument("--device", default="cuda")
