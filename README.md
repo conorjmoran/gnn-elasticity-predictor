@@ -103,6 +103,7 @@ NOTE: This repository is only set up to function with a CUDA-capable GPU.
    conda activate gnn-elasticity
    ```
    Tip: It’s recommended to set the gnn-elasticity Conda environment as the default Python environment for this directory in your IDE (e.g., VS Code, PyCharm, or Jupyter).
+
    In VS Code, run Ctrl + Shift + P → “Python: Select Interpreter”, then choose conda env: gnn-elasticity (Python 3.11).
    This ensures all scripts, notebooks, and terminals in this project use the correct dependencies automatically.
 
@@ -117,11 +118,11 @@ NOTE: This repository is only set up to function with a CUDA-capable GPU.
    
    This prevents confusion between base and project environments and ensures consistent package versions across all workflows.
 
-2. Install the pinned dependencies (CUDA 12.1 build by default):
+3. Install the pinned dependencies (CUDA 12.1 build by default):
    ```bash
    pip install -r requirements.txt
    ```
-3. (Optional) Register the environment with Jupyter:
+4. (Optional) Register the environment with Jupyter:
    ```bash
    python -m ipykernel install --user --name gnn-elasticity
    ```
