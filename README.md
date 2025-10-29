@@ -91,45 +91,31 @@ ls
 
 ## Installation
 
-The project is configured for the CUDA 12.1 toolchain pinned in `requirements.txt`. Adjust versions if your hardware differs.
-
-NOTE: This repository is only set up to function with a CUDA-capable GPU.
+The project targets the CUDA 12.1 toolchain pinned in `requirements.txt`. Adjust versions if your hardware differs. A CUDA-capable GPU is required.
 
 ### Recommended: Conda (or mamba)
 
-1. Create and activate an environment (pick Python 3.10 or 3.11):
+1. Create and activate the environment (Python 3.10 or 3.11):
    ```bash
    conda create -n gnn-elasticity python=3.11
    conda activate gnn-elasticity
    ```
-   Tip: It’s recommended to set the gnn-elasticity Conda environment as the default Python environment for this directory in your IDE (e.g., VS Code, PyCharm, or Jupyter).
-
-   In VS Code, run Ctrl + Shift + P → “Python: Select Interpreter”, then choose conda env: gnn-elasticity (Python 3.11).
-   This ensures all scripts, notebooks, and terminals in this project use the correct dependencies automatically.
-
-   In PyCharm, open File → Settings → Project → Python Interpreter, and select
-   .../anaconda3/envs/gnn-elasticity/python.exe.
-
-   In Jupyter, register the environment once:
-   ```bash
-   python -m ipykernel install --user --name gnn-elasticity
-   ```
-   Then select it via Kernel → Change Kernel → gnn-elasticity.
-   
-   This prevents confusion between base and project environments and ensures consistent package versions across all workflows.
-
+2. Set the `gnn-elasticity` environment as your editor's default interpreter so scripts, notebooks, and terminals use the correct dependencies:
+   - **VS Code:** press `Ctrl+Shift+P`, choose `Python: Select Interpreter`, and pick `conda env: gnn-elasticity (Python 3.11)`.
+   - **PyCharm:** go to `File > Settings > Project > Python Interpreter` and select `.../anaconda3/envs/gnn-elasticity/python.exe`.
+   - **Jupyter:** register the kernel once:
+     ```bash
+     python -m ipykernel install --user --name gnn-elasticity
+     ```
+     then choose it via `Kernel > Change Kernel > gnn-elasticity`.
 3. Install the pinned dependencies (CUDA 12.1 build by default):
    ```bash
    pip install -r requirements.txt
    ```
-4. (Optional) Register the environment with Jupyter:
-   ```bash
-   python -m ipykernel install --user --name gnn-elasticity
-   ```
-   
+
 ### Alternative: Python virtual environment
 
-If you prefer standard `venv`, follow these steps instead:
+If you prefer standard `venv`, follow these steps:
 
 1. Create and activate the virtual environment:
    ```bash
@@ -156,7 +142,7 @@ export MP_API_KEY=YOUR_KEY_HERE        # bash/zsh
 
 ## Usage
 
-### 1. Fetch & Featurize data
+### 1. Fetch & Featurize Data
 ```bash
 python scripts/fetch.py --api-key $env:MP_API_KEY
 ```
@@ -178,9 +164,9 @@ python scripts/train.py --data-dir data/mp_gnn --epochs 60 `
 ```
 Checkpoints are saved in `artifacts/ensemble`. Enable KNN density weighting with `--enable-density-weighting` if desired.
 
-### 3. Evaluate & plot
+### 3. Evaluate & Plot
 
-Note: A pretrained ensemble is included under `artifacts/ensemble` (checkpoints, scaler, conformal stats). Run fetch.py to generate .pt graphs before running evaluate.py on the pretrained ensemble.
+> **Note:** A pretrained ensemble is included under `artifacts/ensemble` (checkpoints, scaler, conformal stats). Run `fetch.py` to generate `.pt` graphs before running `evaluate.py` on the pretrained ensemble.
 
 ```bash
 python scripts/evaluate.py --ensemble-dir artifacts/ensemble --data-dir data/mp_gnn
@@ -189,7 +175,7 @@ By default the script evaluates the **test** split and writes metrics + plots to
 
 ### 4. Inference (scripts/predict.py)
 
-Note: A pretrained ensemble is included under `artifacts/ensemble` (checkpoints, scaler, conformal stats). You can run inference immediately with custom materials, or after running fetch.py to generate .pt graphs.
+> **Note:** A pretrained ensemble is included under `artifacts/ensemble` (checkpoints, scaler, conformal stats). You can run inference immediately with custom materials, or after running `fetch.py` to generate `.pt` graphs.
 
 ```bash
 # Random sample of N cached graphs with ground-truth comparison
@@ -263,4 +249,8 @@ https://github.com/conorjmoran/gnn-elasticity-predictor
 - Analyze high-variance predictions to identify model improvement opportunities.
 - Enhance pre-calibration uncertainty metrics (reduce ECE, improve coverage).
 - Enable usability on CPU only builds.
+
+
+
+
 
