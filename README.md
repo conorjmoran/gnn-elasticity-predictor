@@ -183,7 +183,7 @@ python scripts/evaluate.py --ensemble-dir artifacts/ensemble --data-dir data/mp_
 ```
 By default the script evaluates the **test** split and writes metrics + plots to `artifacts/eval/ensemble/test`. Use `--eval-split val` (or `train`, `calib`, `fold`) to change the split.
 
-### 4. Inference (`scripts/predict.py`)
+### 4. Inference (scripts/predict.py)
 
 ```bash
 # Random sample of N cached graphs with ground-truth comparison
