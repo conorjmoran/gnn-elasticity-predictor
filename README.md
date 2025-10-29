@@ -178,12 +178,17 @@ python scripts/train.py --data-dir data/mp_gnn --epochs 60 `
 Checkpoints are saved in `artifacts/ensemble`. Enable KNN density weighting with `--enable-density-weighting` if desired.
 
 ### 3. Evaluate & plot
+
+Note: A pretrained ensemble is included under `artifacts/ensemble` (checkpoints, scaler, conformal stats). Run fetch.py to generate .pt graphs before running evaluate.py on the pretrained ensemble.
+
 ```bash
 python scripts/evaluate.py --ensemble-dir artifacts/ensemble --data-dir data/mp_gnn
 ```
 By default the script evaluates the **test** split and writes metrics + plots to `artifacts/eval/ensemble/test`. Use `--eval-split val` (or `train`, `calib`, `fold`) to change the split.
 
 ### 4. Inference (scripts/predict.py)
+
+Note: A pretrained ensemble is included under `artifacts/ensemble` (checkpoints, scaler, conformal stats). You can run inference immediately with custom materials, or after running fetch.py to generate .pt graphs.
 
 ```bash
 # Random sample of N cached graphs with ground-truth comparison
@@ -205,7 +210,6 @@ Flags:
 > * A starter file is provided at `data/mat2vec_embeddings.json`.  
 > * To download the official embeddings, clone or download [mat2vec](https://github.com/materialsintelligence/mat2vec) and place `mat2vec_embeddings.json` under `data/`.  
 > * `fetch.py` and `predict.py` automatically search `data/mat2vec_embeddings.json` (then fall back to the repo root) unless you pass `--disable-mat2vec`.  
-> * A pretrained ensemble is included under `artifacts/ensemble` (checkpoints, scaler, conformal stats). You can run inference and evaluation immediately without retraining.
 
 ### Custom-material JSON Template
 
