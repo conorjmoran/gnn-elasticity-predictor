@@ -134,7 +134,7 @@ export MP_API_KEY=YOUR_KEY_HERE        # bash/zsh
 
 ### 1. Fetch & Featurize data
 ```bash
-python scripts/fetch.py --api-key $MP_API_KEY
+python scripts/fetch.py --api-key $env:MP_API_KEY
 ```
 Outputs ALIGNN graphs to `data/mp_gnn`. `--quiet` is on by default to suppress benign CrystalNN warnings; pass `--no-quiet` to view them.
 
