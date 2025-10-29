@@ -139,11 +139,15 @@ python scripts/fetch.py --api-key $env:MP_API_KEY
 Outputs ALIGNN graphs to `data/mp_gnn`. `--quiet` is on by default to suppress benign CrystalNN warnings; pass `--no-quiet` to view them.
 
 ### 2. Train the ensemble
-```bash
+# Linux/macOS or Git Bash:
 python scripts/train.py --data-dir data/mp_gnn --epochs 60 \
   --ensemble-size 5 --hidden 256 --layers 4 --heads 4 \
   --val-frac 0.1 --calib-frac 0.05 --test-frac 0.1
-```
+
+# PowerShell (use backticks or a single line):
+# python scripts/train.py --data-dir data/mp_gnn --epochs 60 `
+#   --ensemble-size 5 --hidden 256 --layers 4 --heads 4 `
+#   --val-frac 0.1 --calib-frac 0.05 --test-frac 0.1
 Checkpoints are saved in `artifacts/ensemble`. Enable KNN density weighting with `--enable-density-weighting` if desired.
 
 ### 3. Evaluate & plot
