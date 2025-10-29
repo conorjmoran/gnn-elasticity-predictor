@@ -100,6 +100,21 @@ The project is configured for the CUDA 12.1 toolchain pinned in `requirements.tx
    conda create -n gnn-elasticity python=3.11
    conda activate gnn-elasticity
    ```
+   Tip: It’s recommended to set the gnn-elasticity Conda environment as the default Python environment for this directory in your IDE (e.g., VS Code, PyCharm, or Jupyter).
+   In VS Code, run Ctrl + Shift + P → “Python: Select Interpreter”, then choose conda env: gnn-elasticity (Python 3.11).
+   This ensures all scripts, notebooks, and terminals in this project use the correct dependencies automatically.
+
+   In PyCharm, open File → Settings → Project → Python Interpreter, and select
+   .../anaconda3/envs/gnn-elasticity/python.exe.
+
+   In Jupyter, register the environment once:
+   ```bash
+   python -m ipykernel install --user --name gnn-elasticity
+   ```
+   Then select it via Kernel → Change Kernel → gnn-elasticity.
+   
+   This prevents confusion between base and project environments and ensures consistent package versions across all workflows.
+
 2. Install the pinned dependencies (CUDA 12.1 build by default):
    ```bash
    pip install -r requirements.txt
@@ -109,14 +124,14 @@ The project is configured for the CUDA 12.1 toolchain pinned in `requirements.tx
    python -m ipykernel install --user --name gnn-elasticity
    ```
 
-   > **CPU-only:** If you do not have a CUDA-capable GPU, reinstall CPU wheels inside the active conda environment:
-   > ```bash
-   > pip uninstall torch torchvision torchaudio -y
-   > pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cpu
-   > pip install torch-scatter torch-sparse torch-cluster torch-spline-conv \
-   >   -f https://data.pyg.org/whl/torch-2.3.1+cpu.html
-   > pip install torch-geometric
-   > ```
+> **CPU-only:** If you do not have a CUDA-capable GPU, reinstall CPU wheels inside the active conda environment:
+> ```bash
+> pip uninstall torch torchvision torchaudio -y
+> pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cpu
+> pip install torch-scatter torch-sparse torch-cluster torch-spline-conv \
+>   -f https://data.pyg.org/whl/torch-2.3.1+cpu.html
+> pip install torch-geometric
+> ```
 
 ### Alternative: Python virtual environment
 
