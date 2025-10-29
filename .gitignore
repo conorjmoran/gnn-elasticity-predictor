@@ -33,6 +33,12 @@ coverage.xml
 artifacts/eval/
 data/mp_gnn/
 
+# IDE settings
+.vscode/
+.idea/
+.vs/
+*.code-workspace
+
 # Miscellaneous
 *.sqlite3
 *.db
