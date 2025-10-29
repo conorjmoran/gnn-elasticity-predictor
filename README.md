@@ -93,6 +93,8 @@ ls
 
 The project is configured for the CUDA 12.1 toolchain pinned in `requirements.txt`. Adjust versions if your hardware differs.
 
+NOTE: This repository is only set up to function with a CUDA-capable GPU.
+
 ### Recommended: Conda (or mamba)
 
 1. Create and activate an environment (pick Python 3.10 or 3.11):
@@ -123,16 +125,7 @@ The project is configured for the CUDA 12.1 toolchain pinned in `requirements.tx
    ```bash
    python -m ipykernel install --user --name gnn-elasticity
    ```
-
-> **CPU-only:** If you do not have a CUDA-capable GPU, reinstall CPU wheels inside the active conda environment:
-> ```bash
-> pip uninstall torch torchvision torchaudio -y
-> pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cpu
-> pip install torch-scatter torch-sparse torch-cluster torch-spline-conv \
->   -f https://data.pyg.org/whl/torch-2.3.1+cpu.html
-> pip install torch-geometric
-> ```
-
+   
 ### Alternative: Python virtual environment
 
 If you prefer standard `venv`, follow these steps instead:
@@ -148,11 +141,9 @@ If you prefer standard `venv`, follow these steps instead:
    pip install -r requirements.txt
    ```
 
-   > **CPU-only:** Apply the same wheel replacements shown in the conda instructions above while the virtual environment is activated.
-
 Key dependencies (pinned):
 - Python 3.10/3.11
-- PyTorch 2.3.1 + cu121 (or CPU wheel)
+- PyTorch 2.3.1 + cu121
 - PyTorch Geometric 2.7.0 + matching scatter/sparse/cluster/spline wheels
 - numpy 1.26.4, scipy 1.16.2, pymatgen 2025.x, mp-api, matplotlib, tqdm, scikit-learn
 
@@ -266,4 +257,5 @@ https://github.com/conorjmoran/gnn-elasticity-predictor
 - Simplify and strengthen error handling.
 - Analyze high-variance predictions to identify model improvement opportunities.
 - Enhance pre-calibration uncertainty metrics (reduce ECE, improve coverage).
+- Enable usability on CPU only builds.
 
