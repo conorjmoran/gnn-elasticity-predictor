@@ -76,19 +76,23 @@ gnn-elasticity-predictor/
 
 The project is configured for the CUDA 12.1 toolchain pinned in `requirements.txt`. Adjust versions if your hardware differs.
 
-1. Create and activate a virtual environment:
-   ```bash
-   python -m venv .venv
-   .\.venv\Scripts\activate          # Windows
-   # source .venv/bin/activate       # Linux/macOS
-   ```
+### Recommended: Conda (or mamba)
 
-2. Install pinned dependencies (CUDA 12.1 build by default):
+1. Create and activate an environment (pick Python 3.10 or 3.11):
+   ```bash
+   conda create -n gnn-elasticity python=3.11
+   conda activate gnn-elasticity
+   ```
+2. Install the pinned dependencies (CUDA 12.1 build by default):
    ```bash
    pip install -r requirements.txt
    ```
+3. (Optional) Register the environment with Jupyter:
+   ```bash
+   python -m ipykernel install --user --name gnn-elasticity
+   ```
 
-   > **CPU-only:** If you do not have a CUDA-capable GPU, uninstall the CUDA wheels and reinstall CPU variants:
+   > **CPU-only:** If you do not have a CUDA-capable GPU, reinstall CPU wheels inside the active conda environment:
    > ```bash
    > pip uninstall torch torchvision torchaudio -y
    > pip install torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1 --index-url https://download.pytorch.org/whl/cpu
@@ -96,6 +100,23 @@ The project is configured for the CUDA 12.1 toolchain pinned in `requirements.tx
    >   -f https://data.pyg.org/whl/torch-2.3.1+cpu.html
    > pip install torch-geometric
    > ```
+
+### Alternative: Python virtual environment
+
+If you prefer standard `venv`, follow these steps instead:
+
+1. Create and activate the virtual environment:
+   ```bash
+   python -m venv .venv
+   .\.venv\Scripts\activate          # Windows
+   # source .venv/bin/activate       # Linux/macOS
+   ```
+2. Install the pinned dependencies (CUDA 12.1 build by default):
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+   > **CPU-only:** Apply the same wheel replacements shown in the conda instructions above while the virtual environment is activated.
 
 Key dependencies (pinned):
 - Python 3.10/3.11
