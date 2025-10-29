@@ -71,6 +71,23 @@ gnn-elasticity-predictor/
 |-- README.md
 `-- ...
 ```
+## Getting Started
+### Clone the Repository
+To get started, clone this repository to your local machine and navigate into it:
+```bash
+git clone https://github.com/conorjmoran/gnn-elasticity-predictor.git
+cd gnn-elasticity-predictor
+```
+If you intend to contribute, it’s recommended to fork the repository first and then clone your fork:
+```bash
+git clone https://github.com/<your-username>/gnn-elasticity-predictor.git
+cd gnn-elasticity-predictor
+```
+You can verify the structure was cloned correctly by listing its contents:
+```bash
+ls
+# scripts/  data/  artifacts/  requirements.txt  README.md  ...
+```
 
 ## Installation
 
