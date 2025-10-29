@@ -66,7 +66,7 @@ gnn-elasticity-predictor/
 |   `-- custom_materials.json # Example custom inference input
 |-- artifacts/
 |   |-- ensemble/             # Checkpoints, scaler_state.pt, conformal.pt, etc.
-|   `-- eval/                 # Evaluation outputs (metrics + plots)
+|   `-- eval/                 # Evaluation metrics + plots (created by evaluate.py)
 |-- requirements.txt
 |-- README.md
 `-- ...
@@ -220,4 +220,10 @@ https://github.com/conorjmoran/gnn-elasticity-predictor
 
 ## Future Work
 - Investigate non-negative predictive intervals (log-normal or truncated distributions) to avoid clipping 90% confidence bounds below zero.
+- Improve shear modulus accuracy through feature, model architecture, and hyperparameter tuning.
+- Add a streamlined, user-friendly interface.
+- Refactor for leaner, more efficient code.
+- Simplify and strengthen error handling.
+- Analyze high-variance predictions to identify model improvement opportunities.
+- Enhance pre-calibration uncertainty metrics (reduce ECE, improve coverage).
 

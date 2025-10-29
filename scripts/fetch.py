@@ -694,8 +694,8 @@ def fetch_and_build(out_dir: str, limit: Optional[int], nn_method: str, cutoff: 
             docs = mpr.materials.summary.search(
                 fields=fields,
                 **query_kwargs,
-                num_chunks=1,
-                chunk_size=limit,
+                num_chunks=math.ceil(limit/page_size),
+                chunk_size=page_size,
             )
 
     # Prepare basis centers
