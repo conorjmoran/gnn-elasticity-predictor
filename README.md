@@ -140,9 +140,11 @@ Outputs ALIGNN graphs to `data/mp_gnn`. `--quiet` is on by default to suppress b
 
 ### 2. Train the ensemble
 # Linux/macOS or Git Bash:
+```bash
 python scripts/train.py --data-dir data/mp_gnn --epochs 60 \
   --ensemble-size 5 --hidden 256 --layers 4 --heads 4 \
   --val-frac 0.1 --calib-frac 0.05 --test-frac 0.1
+```
 
 # PowerShell (use backticks or a single line):
 # python scripts/train.py --data-dir data/mp_gnn --epochs 60 `
