@@ -39,12 +39,12 @@ spearmanr_fn: SpearmanCallable = _scipy_spearmanr
 MIN_LOGVAR_FLOOR = -2.9
 
 # Enable TF32 on CUDA for speed (safe for training with bfloat16 autocast)
-    if torch.cuda.is_available():
-        try:
-            torch.backends.cuda.matmul.allow_tf32 = True  # type: ignore[attr-defined]
-            torch.backends.cudnn.allow_tf32 = True  # type: ignore[attr-defined]
-        except Exception:
-            pass
+if torch.cuda.is_available():
+    try:
+        torch.backends.cuda.matmul.allow_tf32 = True  # type: ignore[attr-defined]
+        torch.backends.cudnn.allow_tf32 = True  # type: ignore[attr-defined]
+    except Exception:
+        pass
 
 class PtGraphDataset(TorchDataset):
     def __init__(
