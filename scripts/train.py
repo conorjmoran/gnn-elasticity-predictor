@@ -39,12 +39,12 @@ spearmanr_fn: SpearmanCallable = _scipy_spearmanr
 MIN_LOGVAR_FLOOR = -2.9
 
 # Enable TF32 on CUDA for speed (safe for training with bfloat16 autocast)
-if torch.cuda.is_available():
-    try:
-        torch.backends.cuda.matmul.allow_tf32 = True  # type: ignore[attr-defined]
-        torch.backends.cudnn.allow_tf32 = True  # type: ignore[attr-defined]
-    except Exception:
-        pass
+    if torch.cuda.is_available():
+        try:
+            torch.backends.cuda.matmul.allow_tf32 = True  # type: ignore[attr-defined]
+            torch.backends.cudnn.allow_tf32 = True  # type: ignore[attr-defined]
+        except Exception:
+            pass
 
 class PtGraphDataset(TorchDataset):
     def __init__(
@@ -1531,9 +1531,12 @@ def train_member(
         )
     optimizer_choice = str(args.optimizer).lower()
     if optimizer_choice == "adamw":
+        fused_kwargs: Dict[str, Any] = {}
+        if device.type in {"cuda", "xpu", "privateuseone"}:
+            fused_kwargs["fused"] = True
         try:
-            optimizer = AdamW(param_groups, lr=base_lr, weight_decay=args.weight_decay, fused=True)
-        except TypeError:
+            optimizer = AdamW(param_groups, lr=base_lr, weight_decay=args.weight_decay, **fused_kwargs)
+        except (TypeError, RuntimeError):
             optimizer = AdamW(param_groups, lr=base_lr, weight_decay=args.weight_decay)
     else:
         optimizer = Adam(param_groups, lr=base_lr, weight_decay=args.weight_decay)
