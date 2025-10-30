@@ -237,6 +237,29 @@ class LogTransformer:
         self.stds = stds.astype(float)
         return self
 
+    def state_dict(self) -> Dict[str, np.ndarray]:
+        means, stds = self._ensure_fitted()
+        return {
+            "means": means.astype(float).copy(),
+            "stds": stds.astype(float).copy(),
+        }
+
+    def load_state_dict(self, state: Dict[str, Any]) -> "LogTransformer":
+        if not isinstance(state, dict):
+            raise TypeError("LogTransformer state must be a dict containing 'means' and 'stds'.")
+        if "means" not in state or "stds" not in state:
+            raise KeyError("LogTransformer state requires 'means' and 'stds'.")
+        means = np.asarray(state["means"], dtype=float)
+        stds = np.asarray(state["stds"], dtype=float)
+        if means.shape != stds.shape:
+            raise ValueError("LogTransformer state 'means' and 'stds' must have the same shape.")
+        if means.ndim != 1:
+            raise ValueError("LogTransformer expects 1-D statistics arrays.")
+        stds = np.where(np.isfinite(stds) & (stds > 1e-12), stds, 1.0)
+        self.means = means.astype(float)
+        self.stds = stds.astype(float)
+        return self
+
     def _ensure_fitted(self) -> Tuple[np.ndarray, np.ndarray]:
         if self.means is None or self.stds is None:
             raise RuntimeError("LogTransformer must be fitted before use.")
@@ -1064,19 +1087,19 @@ def parse_args():
     p.add_argument(
         "--member-dropouts",
         type=str,
-        default="0.05,0.1,0.15,0.2,0.25",
+        default=None,
         help="Optional comma-separated dropout rates per ensemble member (length must equal --ensemble-size)",
     )
     p.add_argument(
         "--member-lrs",
         type=str,
-        default="3.2e-4,2.8e-4,3.5e-4,2.5e-4,3e-4",
+        default=None,
         help="Optional comma-separated learning rates per ensemble member (length must equal --ensemble-size)",
     )
     p.add_argument(
         "--member-hiddens",
         type=str,
-        default="256,176,288,224,192",
+        default=None,
         help="Optional comma-separated hidden dimensions per ensemble member (length must equal --ensemble-size)",
     )
     p.add_argument("--freq-bins", type=int, default=6)
@@ -1404,6 +1427,12 @@ def _setup(args):
         "global_std": global_std_tensor,
         "target_transform": "log",
     }
+    if transformer is not None:
+        lt_state = transformer.state_dict()
+        scaler_state["log_transform"] = {
+            "means": torch.as_tensor(lt_state["means"], dtype=torch.float32),
+            "stds": torch.as_tensor(lt_state["stds"], dtype=torch.float32),
+        }
 
     return (
         dataset,
@@ -1980,10 +2009,8 @@ def main():
         raise ValueError("--bootstrap-ratio must be positive when bootstrapping is enabled")
 
     num_folds = len(fold_val_indices)
-    if num_folds != 5:
-        raise ValueError(f"Expected 5 folds from setup, got {num_folds}")
-    if int(args.ensemble_size) != num_folds:
-        raise ValueError(f"For 5-fold cross-validation, --ensemble-size must equal {num_folds}")
+    if num_folds != int(args.ensemble_size):
+        raise ValueError(f"Expected {int(args.ensemble_size)} folds from setup, got {num_folds}")
 
     fold_val_sets = [set(fold) for fold in fold_val_indices]
     full_train_set = set(train_indices)

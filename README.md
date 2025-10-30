@@ -229,6 +229,19 @@ Flags:
 
 Contributions are welcome! Please fork the repository, create a feature branch, and submit a pull request. See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
+## Pretrained Ensemble Metrics (Test Split)
+
+| Metric | Bulk Modulus | Shear Modulus |
+|--------|--------------|---------------|
+| RMSE   | 18.48        | 17.72         |
+| MAE    | 8.85         | 9.67          |
+| R^2    | 0.938        | 0.831         |
+| Gaussian NLL | 0.394  | 0.298         |
+| Gaussian ECE | 0.179  | 0.069         |
+| 90% CI Coverage | 0.968 | 0.926       |
+| Conformal Coverage | 0.898 |0.915     |
+
+
 ## License
 
 Distributed under the MIT License. See [LICENSE](LICENSE) for details.
@@ -249,6 +262,9 @@ https://github.com/conorjmoran/gnn-elasticity-predictor
 - Analyze high-variance predictions to identify model improvement opportunities.
 - Enhance pre-calibration uncertainty metrics (reduce ECE, improve coverage).
 - Enable usability on CPU only builds.
+- Improve skew and large ECE for bulk predictions
+- Implement per target affine map
+- Improve holistic calibration error
 
 
 

@@ -85,22 +85,26 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
-def load_scaler_state(ensemble_dir: Path) -> Optional[Dict[str, torch.Tensor]]:
+def load_scaler_state(ensemble_dir: Path) -> Optional[Dict[str, Any]]:
     scaler_path = ensemble_dir / "scaler_state.pt"
     if not scaler_path.exists():
         return None
     state = torch.load(scaler_path, map_location="cpu", weights_only=False)
-    out: Dict[str, torch.Tensor] = {}
+    out: Dict[str, Any] = {}
     for key in ("scalar_mean", "scalar_std", "embed_mean", "embed_std", "global_mean", "global_std"):
         tensor = state.get(key)
         if tensor is not None:
             out[key] = tensor if isinstance(tensor, torch.Tensor) else torch.tensor(tensor)
         else:
             out[key] = None  # type: ignore[assignment]
+    if "log_transform" in state:
+        out["log_transform"] = state["log_transform"]
+    if "target_transform" in state:
+        out["target_transform"] = state["target_transform"]
     return out
 
 
-def apply_standardization_to_dataset(dataset: PtGraphDataset, scaler_state: Optional[Dict[str, torch.Tensor]]) -> None:
+def apply_standardization_to_dataset(dataset: PtGraphDataset, scaler_state: Optional[Dict[str, Any]]) -> None:
     if scaler_state is None:
         return
     dataset.set_feature_standardization(
@@ -113,17 +117,111 @@ def apply_standardization_to_dataset(dataset: PtGraphDataset, scaler_state: Opti
     )
 
 
-def compute_log_transformer(dataset: PtGraphDataset) -> LogTransformer:
+def compute_log_transformer(
+    dataset: Optional[PtGraphDataset],
+    scaler_state: Optional[Dict[str, Any]],
+) -> LogTransformer:
+    transformer = LogTransformer()
+    if scaler_state:
+        lt_state = scaler_state.get("log_transform")
+        if isinstance(lt_state, dict) and "means" in lt_state and "stds" in lt_state:
+            means = lt_state["means"]
+            stds = lt_state["stds"]
+            if isinstance(means, torch.Tensor):
+                means_np = means.detach().cpu().numpy()
+            else:
+                means_np = np.asarray(means, dtype=float)
+            if isinstance(stds, torch.Tensor):
+                stds_np = stds.detach().cpu().numpy()
+            else:
+                stds_np = np.asarray(stds, dtype=float)
+            transformer.load_state_dict({"means": means_np, "stds": stds_np})
+            return transformer
+    if dataset is None:
+        raise ValueError(
+            "Log-transform statistics not found in scaler_state.pt and dataset unavailable. "
+            "Regenerate metadata by rerunning training or ensure scaler_state.pt contains stored statistics."
+        )
     targets: List[np.ndarray] = []
     for idx in range(len(dataset)):
         data = dataset[idx]
         y = data.y
+        if not isinstance(y, torch.Tensor):
+            raise ValueError("Dataset sample missing target tensor; ensure graphs include targets.")
         if y.dim() == 1:
             y = y.view(1, -1)
         targets.append(y.detach().cpu().numpy())
     stacked = np.concatenate(targets, axis=0)
-    transformer = LogTransformer().fit(stacked)
+    transformer.fit(stacked)
+    if scaler_state is not None:
+        lt_state = transformer.state_dict()
+        scaler_state["log_transform"] = {
+            "means": torch.as_tensor(lt_state["means"], dtype=torch.float32),
+            "stds": torch.as_tensor(lt_state["stds"], dtype=torch.float32),
+        }
     return transformer
+
+
+def infer_feature_dims_from_state(
+    state: Dict[str, torch.Tensor],
+    scaler_state: Optional[Dict[str, Any]],
+) -> Dict[str, int]:
+    node_dim = _infer_node_input_dim(state)
+    hidden_dim = _infer_hidden_dim(state)
+    edge_weight = state.get("base.edge_encoder.0.weight")
+    if edge_weight is None:
+        raise ValueError("Checkpoint missing base.edge_encoder.0.weight; cannot infer edge feature dimension.")
+    edge_dim = int(edge_weight.shape[1])
+    angle_weight = state.get("base.angle_encoder.0.weight")
+    angle_dim = int(angle_weight.shape[1]) if angle_weight is not None else 0
+    feat_proj_weight = state.get("base.feat_proj.0.weight")
+    if feat_proj_weight is None:
+        raise ValueError("Checkpoint missing base.feat_proj.0.weight; cannot infer global feature dimension.")
+    global_dim = int(feat_proj_weight.shape[1] - hidden_dim)
+    if global_dim < 0:
+        raise ValueError("Inferred negative global dimension from checkpoint; verify training artifacts.")
+
+    def _tensor_size(value: Any) -> int:
+        if isinstance(value, torch.Tensor):
+            return int(value.numel())
+        if value is None:
+            return 0
+        arr = np.asarray(value)
+        return int(arr.size)
+
+    scalar_dim = 0
+    mat2vec_dim = 0
+    global_scalar_dim = 0
+    if scaler_state:
+        scalar_dim = _tensor_size(scaler_state.get("scalar_mean"))
+        mat2vec_dim = _tensor_size(scaler_state.get("embed_mean"))
+        global_scalar_dim = _tensor_size(scaler_state.get("global_mean"))
+    if scalar_dim + mat2vec_dim == 0:
+        mat2vec_dim = max(node_dim - scalar_dim, 0)
+    if scalar_dim + mat2vec_dim != node_dim:
+        mat2vec_dim = max(node_dim - scalar_dim, 0)
+    sg_one_hot_dim = max(global_dim - global_scalar_dim, 0)
+
+    mean_head_keys = [key for key in state.keys() if key.startswith("mean_heads.") and key.endswith(".weight")]
+    if mean_head_keys:
+        target_dim = len(mean_head_keys)
+    else:
+        output_head_keys = [key for key in state.keys() if key.startswith("base.output_heads.") and key.endswith(".weight")]
+        target_dim = len(output_head_keys)
+    if target_dim <= 0:
+        raise ValueError("Unable to infer target dimension from checkpoint state.")
+
+    return {
+        "scalar_dim": int(scalar_dim),
+        "mat2vec_dim": int(mat2vec_dim),
+        "node_dim": int(node_dim),
+        "edge_dim": int(edge_dim),
+        "angle_dim": int(angle_dim),
+        "global_scalar_dim": int(global_scalar_dim),
+        "global_dim": int(global_dim),
+        "sg_one_hot_dim": int(sg_one_hot_dim),
+        "target_dim": int(target_dim),
+    }
 
 
 def load_mat2vec_lookup(mat2vec_dim: int) -> Tuple[Dict[str, np.ndarray], Optional[np.ndarray]]:
@@ -156,7 +254,7 @@ def load_mat2vec_lookup(mat2vec_dim: int) -> Tuple[Dict[str, np.ndarray], Option
 def standardize_graph_sample(
     data: Data,
     dims: Dict[str, int],
-    scaler_state: Optional[Dict[str, torch.Tensor]],
+    scaler_state: Optional[Dict[str, Any]],
 ) -> Data:
     if scaler_state is None:
         return data
@@ -201,27 +299,32 @@ def infer_model_architecture(states: Sequence[Dict[str, torch.Tensor]], ensemble
 
 
 def build_models(
-    dataset: PtGraphDataset,
     states: Sequence[Dict[str, torch.Tensor]],
+    dims: Dict[str, int],
     hidden_dims: Sequence[int],
     layers: int,
     heads: int,
     device: torch.device,
 ) -> List[HeteroAlignnRegressor]:
+    node_dim = dims["node_dim"]
+    edge_dim = dims["edge_dim"]
+    angle_dim = dims["angle_dim"]
+    global_dim = dims["global_dim"]
+    target_dim = dims["target_dim"]
     models: List[HeteroAlignnRegressor] = []
     for state, hidden in zip(states, hidden_dims):
         base = AlignnRegressor(
-            node_dim=dataset.node_dim,
-            edge_dim=dataset.edge_dim,
-            angle_dim=dataset.angle_dim,
-            global_dim=dataset.global_dim,
-            target_dim=dataset.target_dim,
+            node_dim=node_dim,
+            edge_dim=edge_dim,
+            angle_dim=angle_dim,
+            global_dim=global_dim,
+            target_dim=target_dim,
             hidden=hidden,
             layers=layers,
             heads=heads,
             dropout=0.0,
         )
-        model = HeteroAlignnRegressor(base, dataset.target_dim)
+        model = HeteroAlignnRegressor(base, target_dim)
         model.load_state_dict(state)
         model = model.to(device)
         model.eval()
@@ -229,7 +332,7 @@ def build_models(
     return models
 
 
-def prepare_dataset(data_dir: Path, ensemble_dir: Path) -> Tuple[PtGraphDataset, Dict[str, int], Optional[Dict[str, torch.Tensor]]]:
+def prepare_dataset(data_dir: Path, ensemble_dir: Path) -> Tuple[PtGraphDataset, Dict[str, int], Optional[Dict[str, Any]]]:
     dataset = PtGraphDataset(str(data_dir), use_mat2vec=True)
     scaler_state = load_scaler_state(ensemble_dir)
     apply_standardization_to_dataset(dataset, scaler_state)
@@ -255,10 +358,13 @@ def prepare_dataset(data_dir: Path, ensemble_dir: Path) -> Tuple[PtGraphDataset,
     dims = {
         "scalar_dim": dataset.scalar_dim,
         "mat2vec_dim": dataset.mat2vec_dim,
+        "node_dim": dataset.node_dim,
         "global_scalar_dim": dataset.global_scalar_dim,
         "sg_one_hot_dim": dataset.sg_one_hot_dim,
+        "global_dim": dataset.global_dim,
         "edge_dim": dataset.edge_dim,
         "angle_dim": dataset.angle_dim,
+        "target_dim": dataset.target_dim,
     }
     return dataset, dims, scaler_state
 
@@ -286,7 +392,7 @@ def load_custom_materials(
     input_path: Path,
     dims: Dict[str, int],
     target_dim: int,
-    scaler_state: Optional[Dict[str, torch.Tensor]],
+    scaler_state: Optional[Dict[str, Any]],
 ) -> List[Data]:
     payload = json.loads(input_path.read_text())
     entries = payload.get("materials", [])
@@ -612,17 +718,35 @@ def main() -> None:
     states = [torch.load(p, map_location="cpu", weights_only=True) for p in state_paths]
     ensemble_size = len(states)
 
-    dataset, dims, scaler_state = prepare_dataset(data_dir, ensemble_dir)
-    transformer = compute_log_transformer(dataset)
+    dataset: Optional[PtGraphDataset]
+    dims: Dict[str, int]
+    scaler_state: Optional[Dict[str, Any]]
+
+    if args.mode in ("random", "materials"):
+        dataset, dims, scaler_state = prepare_dataset(data_dir, ensemble_dir)
+    else:
+        dataset = None
+        scaler_state = load_scaler_state(ensemble_dir)
+        if scaler_state is None:
+            raise FileNotFoundError(
+                "scaler_state.pt not found in ensemble directory; custom inference requires saved scaler statistics."
+            )
+        dims = infer_feature_dims_from_state(states[0], scaler_state)
+
+    transformer = compute_log_transformer(dataset, scaler_state)
 
     hidden_dims, layers = infer_model_architecture(states, ensemble_size)
-    models = build_models(dataset, states, hidden_dims, layers, heads=args.heads, device=device)
+    models = build_models(states, dims, hidden_dims, layers, heads=args.heads, device=device)
 
     if args.mode == "random":
+        if dataset is None:
+            raise RuntimeError("Random mode requires a prepared dataset.")
         indices = sample_random_indices(dataset, args.num_samples, None)
         subset = IndexedSubset(dataset, indices)
         loader = DataLoader(cast(PyGDataset, subset), batch_size=args.batch_size, shuffle=False)
     elif args.mode == "materials":
+        if dataset is None:
+            raise RuntimeError("Materials mode requires a prepared dataset.")
         material_ids = [mid.strip() for mid in args.materials.split(",") if mid.strip()]
         if not material_ids:
             raise ValueError("Provide at least one material ID with --materials.")
@@ -632,7 +756,7 @@ def main() -> None:
     else:  # custom
         if not args.input_file:
             raise ValueError("--input-file is required when mode=custom.")
-        custom_materials = load_custom_materials(args.input_file, dims, dataset.target_dim, scaler_state)
+        custom_materials = load_custom_materials(args.input_file, dims, dims["target_dim"], scaler_state)
         loader = DataLoader(custom_materials, batch_size=args.batch_size, shuffle=False)
 
     results = ensemble_predict(models, loader, device, transformer, args.min_logvar_floor)

@@ -789,9 +789,22 @@ def main() -> None:
     # Reliability curves (Gaussian and Conformal)
     coverages = [float(x) for x in str(args.coverage_grid).split(",") if x.strip()]
     nom_g, emp_g = reliability_curve_from_gaussian(mean_z, std_z, targets_z, coverages)
+    ece_per_target = [float("nan")] * target_dim
+    coverage_90_per_target = [float("nan")] * target_dim
+    if emp_g.size > 0:
+        ece_per_target = [
+            ece(nom_g, emp_g[t].tolist()) for t in range(target_dim)
+        ]
+        coverage_arr = np.asarray(nom_g, dtype=float)
+        idx_90_candidates = np.where(np.isclose(coverage_arr, 0.9, atol=1e-6))[0]
+        if idx_90_candidates.size > 0:
+            idx_90 = int(idx_90_candidates[0])
+            coverage_90_per_target = [float(val) for val in emp_g[:, idx_90]]
     # Conformal using saved conf on test (single alpha)
     coverage_conformal: Optional[float] = None
     width_conformal: Optional[float] = None
+    coverage_conformal_per_target: Optional[np.ndarray] = None
+    conformal_width_per_target: Optional[np.ndarray] = None
     if conf_obj is not None:
         lower_o, upper_o = None, None
         # apply_conformal_intervals returns (mean, lower, upper)
@@ -799,6 +812,17 @@ def main() -> None:
         covered = ((targets >= lower_o) & (targets <= upper_o)).float().mean().item()
         coverage_conformal = covered
         width_conformal = (upper_o - lower_o).mean().item()
+        coverage_conformal_per_target = (
+            ((targets >= lower_o) & (targets <= upper_o))
+            .float()
+            .mean(dim=0)
+            .detach()
+            .cpu()
+            .numpy()
+        )
+        conformal_width_per_target = (
+            (upper_o - lower_o).mean(dim=0).detach().cpu().numpy()
+        )
 
     # Sharpness vs coverage via calibration scores (if calib available)
     sharp_widths: List[np.ndarray] = []
@@ -975,7 +999,7 @@ def main() -> None:
     T = mean_orig.size(-1)
     for t in range(T):
         name = target_names[t]
-        metrics["per_target"][name] = {
+        target_metrics = {
             "rmse": stats.get(name, {}).get("rmse", float("nan")),
             "mae": stats.get(name, {}).get("mae", float("nan")),
             "r2": r2[t].item(),
@@ -992,6 +1016,13 @@ def main() -> None:
             "member_nll_std": float(member_nll_per_target_std[t]),
             "ensemble_gain_percent": float(ensemble_gain_per_target[t]),
         }
+        target_metrics["ece_gaussian"] = float(ece_per_target[t])
+        target_metrics["coverage_gaussian_90"] = float(coverage_90_per_target[t])
+        if coverage_conformal_per_target is not None:
+            target_metrics["conformal_coverage"] = float(coverage_conformal_per_target[t])
+        if conformal_width_per_target is not None:
+            target_metrics["conformal_width"] = float(conformal_width_per_target[t])
+        metrics["per_target"][name] = target_metrics
 
     # Save metrics JSON
     metrics_path = output_dir / "metrics.json"
