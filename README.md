@@ -265,6 +265,7 @@ https://github.com/conorjmoran/gnn-elasticity-predictor
 - Improve skew and large ECE for bulk predictions
 - Implement per target affine map
 - Improve holistic calibration error
+- Evaluate performance on experimentally measured data (vs. DFT data from Materials Project)
 
 
 
