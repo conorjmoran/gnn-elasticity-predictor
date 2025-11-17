@@ -243,9 +243,9 @@ Contributions are welcome! Please fork the repository, create a feature branch, 
 
 ## References
 
-Choudhary, K., & DeCost, B. (2021). Atomistic Line Graph Neural Network for improved materials property predictions. npj Computational Materials, 7, 1–10. https://doi.org/10.1038/s41524-021-00559-2
+Choudhary, K., DeCost, B. Atomistic Line Graph Neural Network for improved materials property predictions. npj Comput Mater 7, 185 (2021). https://doi.org/10.1038/s41524-021-00650-1
 
-Jain, A., Ong, S. P., Hautier, G., et al. (2013). The Materials Project: A materials genome approach to accelerating materials innovation. APL Materials, 1(1), 011002. https://doi.org/10.1063/1.4812323
+Anubhav Jain, Shyue Ping Ong, Geoffroy Hautier, Wei Chen, William Davidson Richards, Stephen Dacek, Shreyas Cholia, Dan Gunter, David Skinner, Gerbrand Ceder, Kristin A. Persson; Commentary: The Materials Project: A materials genome approach to accelerating materials innovation. APL Mater. 1 July 2013; 1 (1): 011002. https://doi.org/10.1063/1.4812323
 
 ## License
 
